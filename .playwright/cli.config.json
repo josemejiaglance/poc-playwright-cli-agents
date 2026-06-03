@@ -1,0 +1,13 @@
+{
+  "browser": {
+    "launchOptions": {
+      "headless": false
+    }
+  },
+  "timeouts": {
+    "action": 15000,
+    "navigation": 90000
+  },
+  "outputDir": ".playwright-cli",
+  "outputMode": "file"
+}

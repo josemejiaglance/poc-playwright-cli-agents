@@ -1,0 +1,17 @@
+{
+  "browser": {
+    "launchOptions": {
+      "headless": true,
+      "args": [
+        "--use-fake-ui-for-media-stream",
+        "--use-fake-device-for-media-stream"
+      ]
+    }
+  },
+  "timeouts": {
+    "action": 15000,
+    "navigation": 90000
+  },
+  "outputDir": ".playwright-cli",
+  "outputMode": "file"
+}

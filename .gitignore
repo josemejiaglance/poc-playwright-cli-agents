@@ -1,0 +1,15 @@
+node_modules/
+.env
+.playwright-cli/
+*.log
+.DS_Store
+
+# Auth / storage state (never commit)
+tests/.auth/
+*.auth-state.json
+auth.json
+
+# CI ephemeral
+.ci-session-code
+test-results/
+traces/

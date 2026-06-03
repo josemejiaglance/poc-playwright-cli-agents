@@ -1,0 +1,48 @@
+name: Cobrowse Video E2E
+
+on:
+  push:
+
+concurrency:
+  group: cobrowse-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-video:
+    name: Cobrowse with video
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npm run cli:install-browser
+
+      - name: Run cobrowse video E2E
+        env:
+          GLANCE_AGENT_USER: ${{ secrets.GLANCE_AGENT_USER }}
+          GLANCE_AGENT_PASSWORD: ${{ secrets.GLANCE_AGENT_PASSWORD }}
+          PLAYWRIGHT_CLI_CONFIG: .playwright/cli.config.ci.json
+          CI: "1"
+        run: npm run test:ci:e2e:video
+
+      - name: Upload artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-cli-artifacts
+          path: |
+            .playwright-cli/
+          retention-days: 7
+          if-no-files-found: ignore

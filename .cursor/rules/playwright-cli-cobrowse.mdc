@@ -1,0 +1,52 @@
+---
+description: Playwright CLI co-browse POC — dual sessions (visitor + agent) for MyGlance
+alwaysApply: true
+---
+
+# Playwright CLI — MyGlance co-browse POC
+
+Use **`npx playwright-cli`** from the repository root. Do not assume a global `playwright-cli` install.
+
+## Sessions
+
+| Session | URL | Role |
+|---------|-----|------|
+| `visitor` | `https://dev-cobrowse-test.myglance.net/cobrowse/test` | Co-browse visitor / test page |
+| `agent` | `https://www.myglance.net/login/default.aspx` | Agent console (login manually) |
+
+- Prefix every command with `-s=visitor` or `-s=agent`. Never mix element refs across sessions.
+- Open both sessions: `npm run sessions:open` (headed, persistent profiles).
+- Monitor: `npm run sessions:show` or `npx playwright-cli list`.
+
+## Workflow
+
+1. `snapshot` on the target session to get element refs.
+2. Act using refs: `click`, `fill`, `check`, etc.
+3. `screenshot` on success or failure for evidence.
+4. Re-run `snapshot` after navigation — refs go stale.
+
+## Authentication
+
+- **Do not automate login** for the agent session.
+- User logs in manually in the `agent` browser; `--persistent` keeps cookies between CLI calls.
+- Never put credentials in chat, commits, or tracked files.
+
+## Artifacts
+
+- CLI output (snapshots, screenshots, traces) goes under `.playwright-cli/` (gitignored).
+- Config auto-loads from `.playwright/cli.config.json`.
+
+## npm scripts
+
+- `npm run sessions:open` — start visitor + agent browsers
+- `npm run sessions:show` — Playwright dashboard
+- `npm run sessions:close` — close all sessions
+- `npm run cli:skills` — refresh upstream Playwright CLI skills (`.agents/skills/playwright-cli`)
+
+Upstream command reference: [.agents/skills/playwright-cli/SKILL.md](.agents/skills/playwright-cli/SKILL.md).
+
+**Base test case:** `start-cobrowse-session` — [tests/cases/start-cobrowse-session.md](../../tests/cases/start-cobrowse-session.md). Run `npm run test:assert` after join.
+
+**Glance skill:** [.cursor/skills/glance-cobrowse/SKILL.md](../skills/glance-cobrowse/SKILL.md) — workflow **Start a cobrowse session**.
+
+See [docs/COBROWSE_POC.md](../../docs/COBROWSE_POC.md) for the full runbook.

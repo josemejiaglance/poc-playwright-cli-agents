@@ -1,0 +1,163 @@
+{
+  "id": "start-cobrowse-session-with-video",
+  "name": "Start a Cobrowse Session with Video",
+  "version": "1.0.0",
+  "description": "End-to-end cobrowse session with agent video enabled. Extends the base start-cobrowse-session flow with video-specific preparation and assertions (Agent Video control, agent stream, visitor VideoPlayer, visitor stream not stuck on Waiting).",
+  "tags": ["glance", "cobrowse", "video", "smoke"],
+  "extendsCase": "start-cobrowse-session",
+  "sessions": {
+    "visitor": {
+      "label": "visitor",
+      "homeUrl": "https://dev-cobrowse-test.myglance.net/cobrowse/test",
+      "settingsUrl": "https://dev-cobrowse-test.myglance.net/cobrowse/test/TestPageSettings"
+    },
+    "agent": {
+      "label": "agent",
+      "loginUrl": "https://www.myglance.net/login/default.aspx",
+      "joinUrl": "https://www.myglance.net/agentjoin/AgentJoin.aspx"
+    }
+  },
+  "defaults": {
+    "environment": "staging",
+    "groupId": "21552",
+    "webServer": "www.myglance.net",
+    "cdn": "cdn.myglance.net",
+    "site": "staging"
+  },
+  "phases": [
+    {
+      "id": "setup-sessions",
+      "name": "Open browser sessions",
+      "automation": "script",
+      "script": "npm run sessions:open",
+      "manual": []
+    },
+    {
+      "id": "agent-login",
+      "name": "Agent authentication",
+      "automation": "manual",
+      "manual": [
+        "In the agent browser, log in at myglance.net if not already authenticated."
+      ]
+    },
+    {
+      "id": "configure-visitor-settings",
+      "name": "Configure visitor script tag settings",
+      "automation": "script",
+      "script": "npm run test:configure-visitor"
+    },
+    {
+      "id": "start-visitor-cobrowse",
+      "name": "Start cobrowse on visitor",
+      "automation": "script",
+      "script": "npm run test:start-visitor-cobrowse"
+    },
+    {
+      "id": "grant-camera",
+      "name": "Grant camera and microphone",
+      "automation": "script",
+      "script": "npm run test:grant-media"
+    },
+    {
+      "id": "agent-join",
+      "name": "Agent joins session",
+      "automation": "script",
+      "script": "npm run test:agent-join -- {{runtime.sessionCode}}"
+    },
+    {
+      "id": "enable-agent-video",
+      "name": "Enable agent video and visitor VideoPlayer",
+      "automation": "script",
+      "script": "npm run test:prepare-post-join",
+      "required": true
+    }
+  ],
+  "assertionGroups": {
+    "preJoin": ["visitor-session-code-visible"],
+    "postJoin": [
+      "agent-viewer-loaded",
+      "agent-mirrors-visitor-page",
+      "visitor-in-session-widget"
+    ],
+    "video": [
+      "agent-video-button-visible",
+      "agent-video-streaming",
+      "visitor-video-player-present",
+      "visitor-video-streaming"
+    ],
+    "all": [
+      "visitor-session-code-visible",
+      "agent-viewer-loaded",
+      "agent-mirrors-visitor-page",
+      "visitor-in-session-widget",
+      "agent-video-button-visible",
+      "agent-video-streaming",
+      "visitor-video-player-present",
+      "visitor-video-streaming"
+    ]
+  },
+  "assertions": [
+    {
+      "id": "visitor-session-code-visible",
+      "name": "Visitor displays session code dialog",
+      "session": "visitor",
+      "validator": "visitor-session-code",
+      "group": "preJoin"
+    },
+    {
+      "id": "agent-viewer-loaded",
+      "name": "Agent viewer tab loaded with correct session",
+      "session": "agent",
+      "validator": "agent-viewer-session",
+      "group": "postJoin",
+      "expects": {
+        "groupId": "{{defaults.groupId}}"
+      }
+    },
+    {
+      "id": "agent-mirrors-visitor-page",
+      "name": "Agent viewer mirrors cobrowse test page",
+      "session": "agent",
+      "validator": "agent-viewer-cobrowse-mirror",
+      "group": "postJoin",
+      "expects": {
+        "cobrowseTitle": "Cobrowse Tests"
+      }
+    },
+    {
+      "id": "visitor-in-session-widget",
+      "name": "Visitor cobrowse widget shows in-session state",
+      "session": "visitor",
+      "validator": "visitor-in-session",
+      "group": "postJoin"
+    },
+    {
+      "id": "agent-video-button-visible",
+      "name": "Agent viewer shows Agent Video control",
+      "session": "agent",
+      "validator": "agent-video-button-visible",
+      "group": "video"
+    },
+    {
+      "id": "agent-video-streaming",
+      "name": "Agent video stream active (no n-way video errors)",
+      "session": "agent",
+      "validator": "agent-video-streaming",
+      "group": "video"
+    },
+    {
+      "id": "visitor-video-player-present",
+      "name": "Visitor VideoPlayer iframe present",
+      "session": "visitor",
+      "validator": "visitor-video-player",
+      "group": "video"
+    },
+    {
+      "id": "visitor-video-streaming",
+      "name": "Visitor video stream active (not stuck on Waiting)",
+      "session": "visitor",
+      "validator": "visitor-video-streaming",
+      "group": "video"
+    }
+  ]
+}

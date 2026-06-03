@@ -1,0 +1,151 @@
+{
+  "id": "start-cobrowse-session",
+  "name": "Start a Cobrowse Session",
+  "version": "1.0.0",
+  "description": "Base reusable test case: configure visitor cobrowse settings, start session on visitor, join as agent, grant camera, validate agent viewer and visitor widgets. Extend by adding assertions to the assertions array or new phases.",
+  "tags": ["glance", "cobrowse", "base", "smoke"],
+  "sessions": {
+    "visitor": {
+      "label": "visitor",
+      "homeUrl": "https://dev-cobrowse-test.myglance.net/cobrowse/test",
+      "settingsUrl": "https://dev-cobrowse-test.myglance.net/cobrowse/test/TestPageSettings"
+    },
+    "agent": {
+      "label": "agent",
+      "loginUrl": "https://www.myglance.net/login/default.aspx",
+      "joinUrl": "https://www.myglance.net/agentjoin/AgentJoin.aspx"
+    }
+  },
+  "defaults": {
+    "environment": "staging",
+    "groupId": "21552",
+    "webServer": "www.myglance.net",
+    "cdn": "cdn.myglance.net",
+    "site": "staging"
+  },
+  "phases": [
+    {
+      "id": "setup-sessions",
+      "name": "Open browser sessions",
+      "automation": "script",
+      "script": "npm run sessions:open",
+      "manual": []
+    },
+    {
+      "id": "agent-login",
+      "name": "Agent authentication",
+      "automation": "manual",
+      "manual": [
+        "In the agent browser, log in at myglance.net if not already authenticated.",
+        "Persistent profile retains login for subsequent CLI runs."
+      ]
+    },
+    {
+      "id": "configure-visitor-settings",
+      "name": "Configure visitor script tag settings",
+      "automation": "cli",
+      "session": "visitor",
+      "steps": [
+        { "action": "goto", "url": "{{sessions.visitor.settingsUrl}}" },
+        { "action": "fill", "selector": "#MainContent_CobrowseTestContent_CobrowseGroupId", "value": "{{defaults.groupId}}" },
+        { "action": "fill", "selector": "#MainContent_CobrowseTestContent_CobrowseWebServer", "value": "{{defaults.webServer}}" },
+        { "action": "fill", "selector": "#MainContent_CobrowseTestContent_CobrowseCDN", "value": "{{defaults.cdn}}" },
+        { "action": "uncheck", "role": "checkbox", "name": "No CDN; specify loader script" },
+        { "action": "check", "role": "radio", "name": "Staging" },
+        { "action": "fill", "selector": "#MainContent_CobrowseTestContent_CobrowseGroupId", "value": "{{defaults.groupId}}", "note": "Re-apply groupId after Staging preset overwrites" },
+        { "action": "click", "role": "button", "name": "Save" }
+      ]
+    },
+    {
+      "id": "start-visitor-cobrowse",
+      "name": "Start cobrowse on visitor",
+      "automation": "cli",
+      "session": "visitor",
+      "steps": [
+        { "action": "goto", "url": "{{sessions.visitor.homeUrl}}" },
+        { "action": "click", "role": "link", "name": "Start Cobrowse" },
+        { "action": "extract", "target": "sessionCode", "from": "cobrowse-dialog" }
+      ]
+    },
+    {
+      "id": "grant-camera",
+      "name": "Grant camera and microphone",
+      "automation": "script",
+      "script": "npm run test:grant-media"
+    },
+    {
+      "id": "agent-join",
+      "name": "Agent joins session",
+      "automation": "cli",
+      "session": "agent",
+      "steps": [
+        { "action": "goto", "url": "{{sessions.agent.joinUrl}}" },
+        { "action": "fill", "role": "textbox", "name": "Session Code", "value": "{{runtime.sessionCode}}" },
+        { "action": "click", "role": "button", "name": "Join Session" },
+        { "action": "tab-select", "index": 1 }
+      ]
+    },
+    {
+      "id": "enable-agent-video",
+      "name": "Enable agent video (optional)",
+      "automation": "cli",
+      "session": "agent",
+      "optional": true,
+      "steps": [
+        { "action": "click", "role": "button", "name": "Agent Video" }
+      ]
+    }
+  ],
+  "assertionGroups": {
+    "preJoin": ["visitor-session-code-visible"],
+    "postJoin": [
+      "agent-viewer-loaded",
+      "agent-mirrors-visitor-page",
+      "visitor-in-session-widget",
+      "visitor-video-player-present"
+    ]
+  },
+  "assertions": [
+    {
+      "id": "visitor-session-code-visible",
+      "name": "Visitor displays session code dialog",
+      "session": "visitor",
+      "validator": "visitor-session-code",
+      "group": "preJoin"
+    },
+    {
+      "id": "agent-viewer-loaded",
+      "name": "Agent viewer tab loaded with correct session",
+      "session": "agent",
+      "validator": "agent-viewer-session",
+      "group": "postJoin",
+      "expects": {
+        "groupId": "{{defaults.groupId}}"
+      }
+    },
+    {
+      "id": "agent-mirrors-visitor-page",
+      "name": "Agent viewer mirrors cobrowse test page",
+      "session": "agent",
+      "validator": "agent-viewer-cobrowse-mirror",
+      "group": "postJoin",
+      "expects": {
+        "cobrowseTitle": "Cobrowse Tests"
+      }
+    },
+    {
+      "id": "visitor-in-session-widget",
+      "name": "Visitor cobrowse widget shows in-session state",
+      "session": "visitor",
+      "validator": "visitor-in-session",
+      "group": "postJoin"
+    },
+    {
+      "id": "visitor-video-player-present",
+      "name": "Visitor video player iframe present",
+      "session": "visitor",
+      "validator": "visitor-video-player",
+      "group": "postJoin"
+    }
+  ]
+}
