@@ -55,9 +55,14 @@ function resolveExpects(expects, defaults) {
 
 function runCode(session, code) {
   const escaped = code.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-  const cmd = `npx playwright-cli --config "${PLAYWRIGHT_CLI_CONFIG}" -s=${session} run-code "${escaped}"`;
+  const cmd = `npx playwright-cli -s=${session} run-code "${escaped}"`;
   try {
-    const out = execSync(cmd, { cwd: ROOT, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
+    const out = execSync(cmd, {
+      cwd: ROOT,
+      encoding: 'utf8',
+      maxBuffer: 10 * 1024 * 1024,
+      env: { ...process.env, PLAYWRIGHT_CLI_CONFIG },
+    });
     const match = out.match(/### Result\n([\s\S]*?)(?:\n### |$)/);
     if (!match) return { raw: out, pass: false, error: 'No result block in CLI output' };
     const parsed = JSON.parse(match[1].trim());

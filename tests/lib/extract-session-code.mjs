@@ -24,11 +24,16 @@ const code = `async page => {
 }`;
 
 const escaped = code.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-const cmd = `npx playwright-cli --config "${config}" -s=visitor run-code "${escaped}"`;
+const cmd = `npx playwright-cli -s=visitor run-code "${escaped}"`;
 
 let out;
 try {
-  out = execSync(cmd, { cwd: ROOT, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
+  out = execSync(cmd, {
+    cwd: ROOT,
+    encoding: 'utf8',
+    maxBuffer: 10 * 1024 * 1024,
+    env: { ...process.env, PLAYWRIGHT_CLI_CONFIG: config },
+  });
 } catch (e) {
   console.error(e.stderr?.toString?.() || e.message);
   process.exit(1);
