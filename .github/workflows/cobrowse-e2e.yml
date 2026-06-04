@@ -44,5 +44,7 @@ jobs:
           name: playwright-cli-artifacts
           path: |
             .playwright-cli/
+            ci-artifacts/
+          include-hidden-files: true
           retention-days: 7
           if-no-files-found: ignore

@@ -7,10 +7,15 @@ cd "$ROOT"
 export PLAYWRIGHT_CLI_CONFIG="${PLAYWRIGHT_CLI_CONFIG:-.playwright/cli.config.ci.json}"
 export CI="${CI:-1}"
 
-cleanup() {
+on_exit() {
+  local exit_code=$?
+  if [[ "$exit_code" -ne 0 ]]; then
+    bash "${ROOT}/scripts/ci-capture-failure-artifacts.sh" || true
+  fi
   bash "${ROOT}/scripts/close-sessions-ci.sh" || true
+  exit "$exit_code"
 }
-trap cleanup EXIT
+trap on_exit EXIT
 
 echo "==> Open CI sessions (headless)"
 bash "${ROOT}/scripts/open-sessions-ci.sh"

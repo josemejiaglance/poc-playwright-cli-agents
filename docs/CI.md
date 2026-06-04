@@ -50,7 +50,12 @@ CI uses [`.playwright/cli.config.ci.json`](../.playwright/cli.config.ci.json): h
 
 ## Artifacts on failure
 
-The workflow uploads `.playwright-cli/` (snapshots, console logs) for 7 days when the job fails. Download from the Actions run **Artifacts** tab.
+When the job fails, the workflow captures **visitor and agent screenshots** plus page snapshots before closing browsers, then uploads:
+
+- `.playwright-cli/` — CLI snapshots, console logs, and `ci-failure/` PNGs
+- `ci-artifacts/` — copy of failure PNGs (non-hidden, easy to download)
+
+Download the **`playwright-cli-artifacts`** zip from the Actions run **Artifacts** tab (kept 7 days). Open the `.png` files for a visual of each session at failure time; open `*-snapshot.yml` for the DOM/accessibility tree.
 
 ## Troubleshooting
 
