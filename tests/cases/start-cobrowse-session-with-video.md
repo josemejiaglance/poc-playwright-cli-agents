@@ -13,7 +13,7 @@ Validate end-to-end cobrowse with **agent video** enabled:
 2. Agent joins with session code
 3. Grant camera/microphone
 4. Enable **Agent Video** and wait for visitor **VideoPlayer**
-5. Assert session mirror, video controls, and active streams on both sides
+5. Assert session mirror, video controls, active Agent Video state, mirrored floating widget, and active streams on both sides
 
 ## Prerequisites
 
@@ -71,6 +71,8 @@ node tests/run-assertions.mjs --case start-cobrowse-session-with-video --group v
 | Assertion ID | Session | Pass criteria |
 |--------------|---------|---------------|
 | `agent-video-button-visible` | agent | **Agent Video** button visible in viewer header |
+| `agent-video-button-active` | agent | **Agent Video** shows active session (`active` class, `icon_video-on` icon, “Video connected” title) |
+| `agent-floating-video-widget` | agent | Mirrored visitor floating widget: **Showing Page** dialog, **Video area** region, and video iframe in `pageframe` |
 | `agent-video-streaming` | agent | Agent video frame/region present; no `USENWAYVIDEOSESSIONS` / `ERR_NO_NWAYVIDEO_SETTINGS` |
 | `visitor-video-player-present` | visitor | iframe URL contains `VideoPlayer` |
 | `visitor-video-streaming` | visitor | VideoPlayer loaded; body text does **not** contain `Waiting` |

@@ -87,16 +87,17 @@ async function main() {
   const results = [];
   let failed = 0;
   const needsVideoPrep =
-    opts.group === 'postJoin' ||
-    opts.group === 'video' ||
-    opts.group === 'all' ||
-    (opts.only &&
-      testCase.assertions.some(
-        (a) =>
-          opts.only.includes(a.id) &&
-          (a.group === 'video' ||
-            /video|agent-video/.test(a.validator || a.id || ''))
-      ));
+    process.env.COBROWSE_SKIP_VIDEO_PREP !== '1' &&
+    (opts.group === 'postJoin' ||
+      opts.group === 'video' ||
+      opts.group === 'all' ||
+      (opts.only &&
+        testCase.assertions.some(
+          (a) =>
+            opts.only.includes(a.id) &&
+            (a.group === 'video' ||
+              /video|agent-video/.test(a.validator || a.id || ''))
+        )));
 
   console.log(`\n▶ Running assertions: ${testCase.name} (${testCase.id})\n`);
 

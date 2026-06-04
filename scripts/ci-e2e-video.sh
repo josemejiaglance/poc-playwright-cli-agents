@@ -3,9 +3,16 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
+# shellcheck source=scripts/lib/playwright-cli-env.sh
+source "${ROOT}/scripts/lib/playwright-cli-env.sh"
 
 export PLAYWRIGHT_CLI_CONFIG="${PLAYWRIGHT_CLI_CONFIG:-.playwright/cli.config.ci.json}"
 export CI="${CI:-1}"
+
+step() {
+  echo ""
+  echo "==> [$(date -u +%H:%M:%S)] $*"
+}
 
 on_exit() {
   local exit_code=$?
@@ -17,34 +24,42 @@ on_exit() {
 }
 trap on_exit EXIT
 
-echo "==> Open CI sessions (headless)"
+step "Preflight"
+bash "${ROOT}/scripts/ci-preflight.sh"
+
+step "Open CI sessions (headless)"
 bash "${ROOT}/scripts/open-sessions-ci.sh"
 
-echo "==> Agent login"
+step "Start tracing (visitor + agent)"
+pcli -s=visitor tracing-start 2>/dev/null || true
+pcli -s=agent tracing-start 2>/dev/null || true
+
+step "Agent login"
 bash "${ROOT}/scripts/ci-agent-login.sh"
 
-echo "==> Configure visitor"
+step "Configure visitor"
 npm run test:configure-visitor
 
-echo "==> Start cobrowse on visitor"
+step "Start cobrowse on visitor"
 npm run test:start-visitor-cobrowse
 
-echo "==> Extract session code"
+step "Extract session code"
 bash "${ROOT}/scripts/ci-extract-session-code.sh"
 SESSION_CODE="$(cat "${ROOT}/.ci-session-code")"
 
-echo "==> Grant media"
+step "Grant media"
 npm run test:grant-media
 
-echo "==> Agent join (${SESSION_CODE}) + video prep"
+step "Agent join (${SESSION_CODE}) + video prep"
 npm run test:agent-join -- "$SESSION_CODE"
 
-echo "==> Video assertions"
-COBROWSE_SKIP_END_SESSION=1 node tests/run-assertions.mjs \
+step "Video assertions"
+COBROWSE_SKIP_END_SESSION=1 COBROWSE_SKIP_VIDEO_PREP=1 node tests/run-assertions.mjs \
   --case start-cobrowse-session-with-video \
   --group video
 
-echo "==> End session"
+step "End session"
 npm run test:end-session
 
+echo ""
 echo "CI cobrowse video E2E passed."

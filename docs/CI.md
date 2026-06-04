@@ -4,14 +4,17 @@ The repository runs the full **cobrowse with video** E2E on every `push` via [`.
 
 ## What runs in CI
 
-1. Install Node dependencies and Chromium (`npm ci`, `npm run cli:install-browser`)
-2. Open headless visitor + agent sessions ([`scripts/open-sessions-ci.sh`](../scripts/open-sessions-ci.sh))
-3. Log in agent with GitHub Secrets ([`scripts/ci-agent-login.sh`](../scripts/ci-agent-login.sh))
-4. Configure visitor, start cobrowse, extract session code
-5. Grant media, agent join, enable video, run video assertions
-6. Tear down browsers
+1. **Playwright visitor smoke** — configure-cobrowse-settings spec (no secrets)
+2. Install Node dependencies and Chromium (`npm ci`, `npm run cli:install-browser` / `test:pw:install`)
+3. Open headless visitor + agent sessions ([`scripts/open-sessions-ci.sh`](../scripts/open-sessions-ci.sh))
+4. Log in agent with GitHub Secrets ([`scripts/ci-agent-login.sh`](../scripts/ci-agent-login.sh))
+5. Configure visitor, start cobrowse, extract session code
+6. Grant media, agent join, enable video, run video assertions
+7. Tear down browsers
 
 Entrypoint: `npm run test:ci:e2e:video`
+
+Production practices, hardening checklist, and Playwright Test migration path: [PLAYWRIGHT_CLI_PRODUCTION.md](./PLAYWRIGHT_CLI_PRODUCTION.md).
 
 ## Required GitHub Secrets
 
@@ -55,7 +58,7 @@ When the job fails, the workflow captures **visitor and agent screenshots** plus
 - `.playwright-cli/` — CLI snapshots, console logs, and `ci-failure/` PNGs
 - `ci-artifacts/` — copy of failure PNGs (non-hidden, easy to download)
 
-Download the **`playwright-cli-artifacts`** zip from the Actions run **Artifacts** tab (kept 7 days). Open the `.png` files for a visual of each session at failure time; open `*-snapshot.yml` for the DOM/accessibility tree.
+Download the **`playwright-cli-artifacts`** zip from the Actions run **Artifacts** tab (kept 7 days). Open the `.png` files for a visual of each session at failure time; open `*-snapshot.yml` for the DOM/accessibility tree; open `*-console.log` for browser console output; inspect traces under `.playwright-cli/traces/` with `npx playwright-cli show-trace`.
 
 ## Troubleshooting
 

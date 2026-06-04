@@ -12,5 +12,7 @@ auth.json
 # CI ephemeral
 .ci-session-code
 ci-artifacts/
+visual-assertions/
 test-results/
+playwright-report/
 traces/

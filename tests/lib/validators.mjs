@@ -48,6 +48,78 @@ export const agentVideoButtonVisible = `async page => {
   return { pass, visible: pass };
 }`;
 
+export const agentVideoButtonActive = `async page => {
+  const btn = page.getByRole('button', { name: /Agent Video/i }).first();
+  if (!(await btn.isVisible().catch(() => false))) {
+    return { pass: false, error: 'Agent Video button not visible' };
+  }
+  const state = await btn.evaluate((el) => {
+    const icon = el.querySelector('.btn-icon') || el;
+    const style = getComputedStyle(icon);
+    const bg = style.backgroundImage || '';
+    return {
+      active: el.classList.contains('active'),
+      title: el.getAttribute('title') || '',
+      videoOnIcon: /icon_video-on/i.test(bg),
+      videoOffIcon: /icon_video-off/i.test(bg),
+    };
+  });
+  const titleConnected = /video connected|click to stop/i.test(state.title);
+  const pass =
+    state.active &&
+    state.videoOnIcon &&
+    !state.videoOffIcon &&
+    titleConnected;
+  return {
+    pass,
+    ...state,
+    hint: pass ? null : 'Expected active Agent Video control (active class + video-on icon + connected title)',
+  };
+}`;
+
+export const agentFloatingVideoWidget = `async page => {
+  const pageFrame = page.frames().find((f) => f.name() === 'pageframe');
+  if (!pageFrame) {
+    return { pass: false, error: 'Agent viewer pageframe not found' };
+  }
+  const dialog = pageFrame.getByRole('dialog', { name: /Showing Page/i }).first();
+  const videoArea = pageFrame.getByRole('region', { name: /Video area/i }).first();
+  const showingHeading = pageFrame.getByRole('heading', { name: /Showing Page/i }).first();
+  const leaveBtn = pageFrame.getByRole('button', { name: /Leave session/i }).first();
+  const cobrowseBtn = pageFrame.getByRole('button', { name: /^Cobrowse$/i }).first();
+  const dialogVisible = await dialog.isVisible().catch(() => false);
+  const videoAreaVisible = await videoArea.isVisible().catch(() => false);
+  const headingVisible = await showingHeading.isVisible().catch(() => false);
+  const leaveVisible = await leaveBtn.isVisible().catch(() => false);
+  const cobrowseVisible = await cobrowseBtn.isVisible().catch(() => false);
+  const videoAreaBox = await videoArea.boundingBox().catch(() => null);
+  const iframeCount = await videoArea.locator('iframe').count().catch(() => 0);
+  const videoFramePresent = pageFrame
+    .childFrames()
+    .some((f) => /^glance_video_/i.test(f.name() || ''));
+  const videoSurfaceReady =
+    iframeCount > 0 || videoFramePresent || (videoAreaBox && videoAreaBox.width > 0);
+  const pass =
+    dialogVisible &&
+    videoAreaVisible &&
+    headingVisible &&
+    leaveVisible &&
+    videoSurfaceReady &&
+    !!videoAreaBox &&
+    videoAreaBox.height > 0;
+  return {
+    pass,
+    dialogVisible,
+    videoAreaVisible,
+    headingVisible,
+    leaveVisible,
+    cobrowseVisible,
+    iframeCount,
+    videoFramePresent,
+    videoAreaBox,
+  };
+}`;
+
 export const agentVideoStreaming = `async page => {
   const errors = [];
   await page.context().grantPermissions(['camera', 'microphone']);
@@ -207,6 +279,8 @@ export const validatorMap = {
   'visitor-video-player': visitorVideoPlayer,
   'visitor-video-streaming': visitorVideoStreaming,
   'agent-video-button-visible': agentVideoButtonVisible,
+  'agent-video-button-active': agentVideoButtonActive,
+  'agent-floating-video-widget': agentFloatingVideoWidget,
   'agent-video-streaming': agentVideoStreaming,
   'agent-viewer-session': agentViewerSession,
   'agent-viewer-cobrowse-mirror': agentViewerCobrowseMirror,

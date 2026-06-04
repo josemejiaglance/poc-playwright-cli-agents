@@ -8,6 +8,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  playwright-visitor:
+    name: Playwright visitor smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - run: npm run test:pw:install
+      - run: npm run test:pw:ci -- tests/playwright/visitor
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-test-results
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+
   e2e-video:
     name: Cobrowse with video
     runs-on: ubuntu-latest

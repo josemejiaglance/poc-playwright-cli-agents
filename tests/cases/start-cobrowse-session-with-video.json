@@ -81,6 +81,8 @@
     ],
     "video": [
       "agent-video-button-visible",
+      "agent-video-button-active",
+      "agent-floating-video-widget",
       "agent-video-streaming",
       "visitor-video-player-present",
       "visitor-video-streaming"
@@ -91,6 +93,8 @@
       "agent-mirrors-visitor-page",
       "visitor-in-session-widget",
       "agent-video-button-visible",
+      "agent-video-button-active",
+      "agent-floating-video-widget",
       "agent-video-streaming",
       "visitor-video-player-present",
       "visitor-video-streaming"
@@ -136,6 +140,20 @@
       "name": "Agent viewer shows Agent Video control",
       "session": "agent",
       "validator": "agent-video-button-visible",
+      "group": "video"
+    },
+    {
+      "id": "agent-video-button-active",
+      "name": "Agent Video control shows active video session state",
+      "session": "agent",
+      "validator": "agent-video-button-active",
+      "group": "video"
+    },
+    {
+      "id": "agent-floating-video-widget",
+      "name": "Agent viewer mirrors visitor floating video widget",
+      "session": "agent",
+      "validator": "agent-floating-video-widget",
       "group": "video"
     },
     {

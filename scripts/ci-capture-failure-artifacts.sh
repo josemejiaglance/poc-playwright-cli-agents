@@ -26,8 +26,10 @@ capture_session() {
     return 0
   fi
 
+  pcli -s="${session}" tracing-stop 2>/dev/null || true
   pcli -s="${session}" snapshot --filename="${FAILURE_DIR}/${tag}-snapshot.yml" 2>/dev/null || true
   pcli -s="${session}" screenshot --filename="${FAILURE_DIR}/${tag}.png" 2>/dev/null || true
+  pcli -s="${session}" console 2>/dev/null >"${FAILURE_DIR}/${tag}-console.log" || true
 }
 
 capture_session visitor visitor

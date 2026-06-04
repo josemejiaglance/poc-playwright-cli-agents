@@ -31,11 +31,17 @@
     "test:header:add-guest": "bash scripts/test-header-add-guest.sh",
     "test:end-session": "bash scripts/test-end-session.sh",
     "test:ci:e2e:video": "bash scripts/ci-e2e-video.sh",
-    "ci:extract-session-code": "node tests/lib/extract-session-code.mjs"
+    "test:visualize:video-assertions": "bash scripts/visualize-video-assertions.sh",
+    "ci:extract-session-code": "node tests/lib/extract-session-code.mjs",
+    "test:pw": "playwright test",
+    "test:pw:ci": "playwright test --project=ci",
+    "test:pw:visitor": "playwright test tests/playwright/visitor",
+    "test:pw:install": "playwright install chromium"
   },
   "keywords": ["playwright", "playwright-cli", "cursor", "cobrowse"],
   "license": "ISC",
   "devDependencies": {
-    "@playwright/cli": "^0.1.13"
+    "@playwright/cli": "^0.1.13",
+    "@playwright/test": "^1.52.0"
   }
 }

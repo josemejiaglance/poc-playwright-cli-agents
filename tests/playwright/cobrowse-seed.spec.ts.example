@@ -1,0 +1,37 @@
+/**
+ * Copy to tests/playwright/cobrowse-seed.spec.ts after installing @playwright/test.
+ *
+ * Seed for spec-driven CLI generation:
+ *   PLAYWRIGHT_HTML_OPEN=never npx playwright test tests/playwright/cobrowse-seed.spec.ts --debug=cli
+ *   npx playwright-cli attach tw-XXXX
+ *
+ * Agent auth options (pick one):
+ *   A) storageState from local login: npx playwright-cli -s=agent state-save tests/.auth/agent.json
+ *   B) Programmatic login using GLANCE_AGENT_USER / GLANCE_AGENT_PASSWORD (CI)
+ */
+import { test, expect } from '@playwright/test';
+
+const VISITOR_URL =
+  process.env.COBROWSE_VISITOR_URL ??
+  'https://dev-cobrowse-test.myglance.net/cobrowse/test';
+
+const AGENT_LOGIN_URL =
+  process.env.COBROWSE_AGENT_LOGIN_URL ??
+  'https://www.myglance.net/login/default.aspx';
+
+test('seed — visitor on test page', async ({ page }) => {
+  await page.goto(VISITOR_URL);
+  await expect(page).toHaveURL(/cobrowse\/test/);
+});
+
+test('seed — agent authenticated', async ({ browser }) => {
+  const storageState = process.env.AGENT_STORAGE_STATE ?? 'tests/.auth/agent.json';
+  const context = await browser.newContext({
+    storageState,
+  });
+  const page = await context.newPage();
+  await page.goto(AGENT_LOGIN_URL);
+  // Adjust selector to your post-login signal:
+  await expect(page).not.toHaveURL(/login\/default\.aspx$/);
+  await context.close();
+});

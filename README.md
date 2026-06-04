@@ -33,10 +33,14 @@ Full runbook: [docs/COBROWSE_POC.md](docs/COBROWSE_POC.md).
 
 ## Continuous integration
 
-On every **push**, GitHub Actions runs the full cobrowse **with video** E2E (`npm run test:ci:e2e:video`).
+On every **push**, GitHub Actions runs:
+
+1. **Playwright visitor smoke** — `npm run test:pw:ci -- tests/playwright/visitor` (fast, no secrets)
+2. **Full cobrowse with video E2E** — `npm run test:ci:e2e:video` (requires secrets)
 
 1. Add repository secrets: `GLANCE_AGENT_USER`, `GLANCE_AGENT_PASSWORD`
 2. See [docs/CI.md](docs/CI.md) for workflow details, local dry-run, and troubleshooting
+3. See [docs/PLAYWRIGHT_CLI_PRODUCTION.md](docs/PLAYWRIGHT_CLI_PRODUCTION.md) for CI hardening checklist and `@playwright/test` migration
 
 ```bash
 # Local CI dry-run (same as the workflow)
@@ -46,6 +50,19 @@ export PLAYWRIGHT_CLI_CONFIG=".playwright/cli.config.ci.json"
 export CI=1
 npm run test:ci:e2e:video
 ```
+
+## Playwright Test specs
+
+Migrated specs live under `tests/playwright/` (see [specs/cobrowse-video.plan.md](specs/cobrowse-video.plan.md)).
+
+```bash
+npm run test:pw:install          # once: install Chromium for @playwright/test
+npm run test:pw:ci               # headless (CI project)
+npm run test:pw:visitor          # visitor specs only
+npm run test:pw                  # all specs (local headed project by default)
+```
+
+First spec: `tests/playwright/visitor/configure-cobrowse-settings.spec.ts` (scenario 1.1 — replaces `test:configure-visitor`).
 
 ## Test cases
 
@@ -104,4 +121,8 @@ Optional env: copy [.env.example](.env.example) to `.env` if you want a default 
 | `sessions:open` | Visitor + agent browsers |
 | `sessions:show` | Playwright dashboard |
 | `sessions:close` | Close all sessions |
+| `test:pw` | All Playwright Test specs |
+| `test:pw:ci` | Playwright specs (headless CI project) |
+| `test:pw:visitor` | Visitor Playwright specs |
+| `test:pw:install` | Install Chromium for `@playwright/test` |
 | `test:ci:e2e:video` | Full headless E2E for CI (login + video assertions) |

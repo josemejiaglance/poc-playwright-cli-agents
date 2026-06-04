@@ -1,0 +1,46 @@
+import { defineConfig, devices } from '@playwright/test';
+
+/**
+ * Copy to repo root as playwright.config.ts after: npm install -D @playwright/test
+ *
+ * Dual-context cobrowse tests can use two projects or a single test with
+ * visitorPage + agentPage fixtures (see cobrowse-seed.spec.ts.example).
+ */
+export default defineConfig({
+  testDir: './tests/playwright',
+  fullyParallel: false,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 1 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  reporter: [['html', { open: 'never' }], ['list']],
+  outputDir: 'test-results',
+  use: {
+    trace: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
+    screenshot: 'only-on-failure',
+    video: 'off',
+    actionTimeout: 15_000,
+    navigationTimeout: 90_000,
+  },
+  projects: [
+    {
+      name: 'ci',
+      use: {
+        ...devices['Desktop Chrome'],
+        headless: true,
+        launchOptions: {
+          args: [
+            '--use-fake-ui-for-media-stream',
+            '--use-fake-device-for-media-stream',
+          ],
+        },
+      },
+    },
+    {
+      name: 'local',
+      use: {
+        ...devices['Desktop Chrome'],
+        headless: false,
+      },
+    },
+  ],
+});
